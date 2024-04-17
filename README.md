@@ -1,1 +1,1 @@
-# exercicios-estudo-dio
+# Aqui será armazenado todos os exercícios estudados na plataforma DIO
