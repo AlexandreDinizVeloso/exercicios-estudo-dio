@@ -8,4 +8,4 @@
 # # adicionada a capacidade de registrar usuário, registrar uma ou mais contas a um usuário, listar todas as contas de todos os usuários.
 
 # # terceira versão
-# # transformação do código para orientação à objetos
+# # transformação do código para orientação à objetos, integração das funcionalidades do sistema para as contas, sendo possível sacar, depositar e verificar extrato por conta separada.
