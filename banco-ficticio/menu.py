@@ -256,22 +256,29 @@ def exibir_extrato(usuario):
     if not conta:
         operacao(400, "Conta não encontrada.")
         return
-    
-    opcao = input("Escolha a opção de extrato ([S] para Saques, [D] para Depósitos, [C] para Completo): ").lower()
-    transacoes = []
-    
-    if opcao == "s":
-        transacoes = conta.historico.transacoes_por_tipo("Saque")
-    elif opcao == "d":
-        transacoes = conta.historico.transacoes_por_tipo("Depósito")
-    elif opcao == "c":
-        transacoes = conta.historico.transacoes_por_tipo("Saque") + conta.historico.transacoes_por_tipo("Depósito")
+
+    opcao = input("Escolha a opção de extrato ([H] para Hoje, [P] para Período): ").lower()
+    if opcao == "h":
+        data_hoje = datetime.datetime.now().date()
+        transacoes = [t for t in conta.historico.transacoes if t["data_hora"].date() == data_hoje]
+
+    elif opcao == "p":
+        data_inicio = input("Informe a data de início (dd-mm-aaaa): ")
+        data_fim = input("Informe a data de fim (dd-mm-aaaa): ")
+        try:
+            data_inicio = datetime.datetime.strptime(data_inicio, "%d-%m-%Y")
+            data_fim = datetime.datetime.strptime(data_fim, "%d-%m-%Y")
+        except ValueError:
+            operacao(400, "Data inválida.")
+            return
+        transacoes = [t for t in conta.historico.transacoes if data_inicio <= t["data_hora"] <= data_fim]
+
     else:
         operacao(400, "Opção inválida.")
         return
-    
+
     transacoes_ordenadas = sorted(transacoes, key=lambda x: x["data_hora"])
-    
+
     extrato = ""
     if not transacoes_ordenadas:
         extrato = "Não há registros de movimentação na conta."
@@ -285,8 +292,6 @@ def exibir_extrato(usuario):
                 extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t\t|\tR$ {transacao['valor']:.2f}"
     print(extrato)
     print(f"Saldo:\tR$ {conta.saldo}")
-
-
 
 def criar_cliente(usuarios):
     cpf = input("Informe o CPF (somente número): ")
