@@ -1,4 +1,5 @@
 from abc import ABC, abstractclassmethod, abstractproperty
+import datetime
 
 class conta:
     def __init__(self, numero, usuario):
@@ -48,8 +49,8 @@ class conta:
             operacao(400, "Valor inválido.")
             return False
         self._saldo -= valor
-        operacao(200)
         self._historico.adicionar_transacao("Saque", valor)
+        operacao(200)
         return True
 
     def depositar(self, valor):
@@ -57,8 +58,8 @@ class conta:
             operacao(400, "Valor inválido.")
             return False
         self._saldo += valor
-        operacao(200)
         self._historico.adicionar_transacao("Depósito", valor)
+        operacao(200)
         return True
 
 class conta_corrente(conta):
@@ -96,7 +97,8 @@ class historico:
         return self._transacoes
 
     def adicionar_transacao(self, tipo, valor):
-        self._transacoes.append({"tipo": tipo, "valor": valor})
+        data_hora = datetime.datetime.now()
+        self._transacoes.append({"tipo": tipo, "valor": valor, "data_hora": data_hora})
 
     def transacoes_por_tipo(self, tipo):
         return [t for t in self._transacoes if t["tipo"] == tipo]
@@ -140,9 +142,6 @@ class saque(transacao):
     def registrar(self, conta):
         sucesso_transacao = conta.sacar(self.valor)
 
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao("Saque", self.valor)
-
 class deposito(transacao):
     def __init__(self, valor):
         self._valor = valor
@@ -153,9 +152,6 @@ class deposito(transacao):
 
     def registrar(self, conta):
         sucesso_transacao = conta.depositar(self.valor)
-
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao("Depósito", self.valor)
 
 def operacao(numero, causa=None):
     numero = numero
@@ -251,7 +247,7 @@ def sacar(usuarios):
 
 
 def exibir_extrato(usuario):
-    cpf = input("Informe o CPF do usuario: ")
+    cpf = input("Informe o CPF do usuário: ")
     usuario_selecionado = filtrar_usuario(cpf, usuario)
     if not usuario_selecionado:
         operacao(400, "Usuário não encontrado.")
@@ -260,13 +256,40 @@ def exibir_extrato(usuario):
     if not conta:
         operacao(400, "Conta não encontrada.")
         return
-    transacoes = conta.historico.transacoes_por_tipo("Saque") + conta.historico.transacoes_por_tipo("Depósito")
+
+    opcao = input("Escolha a opção de extrato ([H] para Hoje, [P] para Período): ").lower()
+    if opcao == "h":
+        data_hoje = datetime.datetime.now().date()
+        transacoes = [t for t in conta.historico.transacoes if t["data_hora"].date() == data_hoje]
+
+    elif opcao == "p":
+        data_inicio = input("Informe a data de início (dd-mm-aaaa): ")
+        data_fim = input("Informe a data de fim (dd-mm-aaaa): ")
+        try:
+            data_inicio = datetime.datetime.strptime(data_inicio, "%d-%m-%Y")
+            data_fim = datetime.datetime.strptime(data_fim, "%d-%m-%Y")
+        except ValueError:
+            operacao(400, "Data inválida.")
+            return
+        transacoes = [t for t in conta.historico.transacoes if data_inicio <= t["data_hora"] <= data_fim]
+
+    else:
+        operacao(400, "Opção inválida.")
+        return
+
+    transacoes_ordenadas = sorted(transacoes, key=lambda x: x["data_hora"])
+
     extrato = ""
-    if not transacoes:
+    if not transacoes_ordenadas:
         extrato = "Não há registros de movimentação na conta."
     else:
-        for transacao in transacoes:
-            extrato += f"\n{transacao['tipo']}:\tR$ {transacao['valor']:.2f}"
+        extrato += "\nData e Hora\t\t|\tTipo\t\t|\tValor"
+        for transacao in transacoes_ordenadas:
+            data_hora = transacao["data_hora"].strftime("%d-%m-%Y %H:%M:%S")
+            if transacao['tipo'] == "Depósito":
+                extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t|\tR$ {transacao['valor']:.2f}"
+            else:
+                extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t\t|\tR$ {transacao['valor']:.2f}"
     print(extrato)
     print(f"Saldo:\tR$ {conta.saldo}")
 
