@@ -247,7 +247,7 @@ def sacar(usuarios):
 
 
 def exibir_extrato(usuario):
-    cpf = input("Informe o CPF do usuario: ")
+    cpf = input("Informe o CPF do usuário: ")
     usuario_selecionado = filtrar_usuario(cpf, usuario)
     if not usuario_selecionado:
         operacao(400, "Usuário não encontrado.")
@@ -256,7 +256,20 @@ def exibir_extrato(usuario):
     if not conta:
         operacao(400, "Conta não encontrada.")
         return
-    transacoes = conta.historico.transacoes_por_tipo("Saque") + conta.historico.transacoes_por_tipo("Depósito")
+    
+    opcao = input("Escolha a opção de extrato ([S] para Saques, [D] para Depósitos, [C] para Completo): ").lower()
+    transacoes = []
+    
+    if opcao == "s":
+        transacoes = conta.historico.transacoes_por_tipo("Saque")
+    elif opcao == "d":
+        transacoes = conta.historico.transacoes_por_tipo("Depósito")
+    elif opcao == "c":
+        transacoes = conta.historico.transacoes_por_tipo("Saque") + conta.historico.transacoes_por_tipo("Depósito")
+    else:
+        operacao(400, "Opção inválida.")
+        return
+    
     extrato = ""
     if not transacoes:
         extrato = "Não há registros de movimentação na conta."
