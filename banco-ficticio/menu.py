@@ -48,8 +48,8 @@ class conta:
             operacao(400, "Valor inválido.")
             return False
         self._saldo -= valor
-        operacao(200)
         self._historico.adicionar_transacao("Saque", valor)
+        operacao(200)
         return True
 
     def depositar(self, valor):
@@ -57,8 +57,8 @@ class conta:
             operacao(400, "Valor inválido.")
             return False
         self._saldo += valor
-        operacao(200)
         self._historico.adicionar_transacao("Depósito", valor)
+        operacao(200)
         return True
 
 class conta_corrente(conta):
@@ -140,9 +140,6 @@ class saque(transacao):
     def registrar(self, conta):
         sucesso_transacao = conta.sacar(self.valor)
 
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao("Saque", self.valor)
-
 class deposito(transacao):
     def __init__(self, valor):
         self._valor = valor
@@ -153,9 +150,6 @@ class deposito(transacao):
 
     def registrar(self, conta):
         sucesso_transacao = conta.depositar(self.valor)
-
-        if sucesso_transacao:
-            conta.historico.adicionar_transacao("Depósito", self.valor)
 
 def operacao(numero, causa=None):
     numero = numero
