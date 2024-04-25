@@ -1,4 +1,5 @@
 from abc import ABC, abstractclassmethod, abstractproperty
+import datetime
 
 class conta:
     def __init__(self, numero, usuario):
@@ -96,7 +97,8 @@ class historico:
         return self._transacoes
 
     def adicionar_transacao(self, tipo, valor):
-        self._transacoes.append({"tipo": tipo, "valor": valor})
+        data_hora = datetime.datetime.now()
+        self._transacoes.append({"tipo": tipo, "valor": valor, "data_hora": data_hora})
 
     def transacoes_por_tipo(self, tipo):
         return [t for t in self._transacoes if t["tipo"] == tipo]
@@ -259,10 +261,16 @@ def exibir_extrato(usuario):
     if not transacoes:
         extrato = "Não há registros de movimentação na conta."
     else:
+        extrato += "\nData e Hora\t\t|\tTipo\t\t|\tValor"
         for transacao in transacoes:
-            extrato += f"\n{transacao['tipo']}:\tR$ {transacao['valor']:.2f}"
+            data_hora = transacao["data_hora"].strftime("%d-%m-%Y %H:%M:%S")
+            if transacao['tipo'] == "Depósito":
+                extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t|\tR$ {transacao['valor']:.2f}"
+            else:
+                extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t\t|\tR$ {transacao['valor']:.2f}"
     print(extrato)
     print(f"Saldo:\tR$ {conta.saldo}")
+
 
 def criar_cliente(usuarios):
     cpf = input("Informe o CPF (somente número): ")
