@@ -270,12 +270,14 @@ def exibir_extrato(usuario):
         operacao(400, "Opção inválida.")
         return
     
+    transacoes_ordenadas = sorted(transacoes, key=lambda x: x["data_hora"])
+    
     extrato = ""
-    if not transacoes:
+    if not transacoes_ordenadas:
         extrato = "Não há registros de movimentação na conta."
     else:
         extrato += "\nData e Hora\t\t|\tTipo\t\t|\tValor"
-        for transacao in transacoes:
+        for transacao in transacoes_ordenadas:
             data_hora = transacao["data_hora"].strftime("%d-%m-%Y %H:%M:%S")
             if transacao['tipo'] == "Depósito":
                 extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t|\tR$ {transacao['valor']:.2f}"
@@ -283,6 +285,7 @@ def exibir_extrato(usuario):
                 extrato += f"\n{data_hora}\t|\t{transacao['tipo']}\t\t|\tR$ {transacao['valor']:.2f}"
     print(extrato)
     print(f"Saldo:\tR$ {conta.saldo}")
+
 
 
 def criar_cliente(usuarios):
